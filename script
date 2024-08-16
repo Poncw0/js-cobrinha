@@ -1,0 +1,107 @@
+// Variáveis globais
+let canvas = document.getElementById('canvas');
+let ctx = canvas.getContext('2d');
+let snake = [];
+let food = {};
+let direction = 'right';
+let score = 0;
+
+// Configurações do jogo
+let canvasWidth = 400;
+let canvasHeight = 400;
+let snakeSize = 20;
+let foodSize = 20;
+let speed = 100;
+
+// Inicializa o jogo
+function init() {
+  canvas.width = canvasWidth;
+  canvas.height = canvasHeight;
+  ctx.fillStyle = 'black';
+  ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+  snake = [
+    { x: canvasWidth / 2, y: canvasHeight / 2 },
+    { x: canvasWidth / 2 - snakeSize, y: canvasHeight / 2 },
+    { x: canvasWidth / 2 - snakeSize * 2, y: canvasHeight / 2 }
+  ];
+  food = { x: Math.floor(Math.random() * (canvasWidth / snakeSize)) * snakeSize, y: Math.floor(Math.random() * (canvasHeight / snakeSize)) * snakeSize };
+  drawSnake();
+  drawFood();
+  setInterval(update, speed);
+}
+
+// Desenha a cobrinha
+function drawSnake() {
+  ctx.fillStyle = 'green';
+  for (let i = 0; i < snake.length; i++) {
+    ctx.fillRect(snake[i].x, snake[i].y, snakeSize, snakeSize);
+  }
+}
+
+// Desenha a comida
+function drawFood() {
+  ctx.fillStyle = 'red';
+  ctx.fillRect(food.x, food.y, foodSize, foodSize);
+}
+
+// Atualiza o jogo
+function update() {
+  // Move a cobrinha
+  for (let i = snake.length - 1; i > 0; i--) {
+    snake[i] = { x: snake[i - 1].x, y: snake[i - 1].y };
+  }
+  if (direction === 'right') {
+    snake[0].x += snakeSize;
+  } else if (direction === 'left') {
+    snake[0].x -= snakeSize;
+  } else if (direction === 'up') {
+    snake[0].y -= snakeSize;
+  } else if (direction === 'down') {
+    snake[0].y += snakeSize;
+  }
+
+  // Verifica colisão com a comida
+  if (snake[0].x === food.x && snake[0].y === food.y) {
+    score++;
+    food = { x: Math.floor(Math.random() * (canvasWidth / snakeSize)) * snakeSize, y: Math.floor(Math.random() * (canvasHeight / snakeSize)) * snakeSize };
+  }
+
+  // Verifica colisão com a parede
+  if (snake[0].x < 0 || snake[0].x >= canvasWidth || snake[0].y < 0 || snake[0].y >= canvasHeight) {
+    alert('Game Over!');
+    init();
+  }
+
+  // Verifica colisão com a própria cobrinha
+  for (let i = 1; i < snake.length; i++) {
+    if (snake[0].x === snake[i].x && snake[0].y === snake[i].y) {
+      alert('Game Over!');
+      init();
+    }
+  }
+
+  // Desenha tudo novamente
+  ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+  drawSnake();
+  drawFood();
+  ctx.fillStyle = 'white';
+  ctx.font = '24px Arial';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+  ctx.fillText(`Score: ${score}`, 10, 10);
+}
+
+// Eventos de teclado
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' && direction !== 'left') {
+    direction = 'right';
+  } else if (e.key === 'ArrowLeft' && direction !== 'right') {
+    direction = 'left';
+  } else if (e.key === 'ArrowUp' && direction !== 'down') {
+    direction = 'up';
+  } else if (e.key === 'ArrowDown' && direction !== 'up') {
+    direction = 'down';
+  }
+});
+
+init();
